@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<string name="app_name">Overlay</string>
+<string name="app_name_caps">OVERLAY</string>
+
+<string name="type_select">Type</string>
+<string name="type_1">Android</string>
+<string name="type_2">Snow</string>
+<string name="timing_select">Timing</string>
+<string name="timing_1">30 mins</string>
+<string name="timing_2">1 hour</string>
+<string name="timing_3">2 hour</string>
+<string name="amount_select">Amount</string>
+<string name="amount_1">1</string>
+<string name="amount_2">2</string>
+<string name="amount_3">3</string>
+<string name="amount_4">4</string>
+<string name="amount_5">5</string>
+<string name="amount_6">6</string>
+<string name="amount_7">7</string>
+<string name="amount_8">8</string>
+<string name="amount_9">9</string>
+<string name="amount_10">10</string>
+
+<string name="toggle_turn_on">ON</string>
+<string name="toggle_turn_off">OFF</string>
+
+</resources>
