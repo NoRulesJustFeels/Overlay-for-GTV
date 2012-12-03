@@ -24,10 +24,10 @@ import android.graphics.Bitmap;
  * A simple runnable that updates the position of each sprite on the screen
  * every frame by applying a very simple gravity simulation.
  */
-public class SnowMover extends FallingMover {
-	private static final String LOG_CAT = "SnowMover";
+public class ChristmasMover extends FallingMover {
+	private static final String LOG_CAT = "ChristmasMover";
 
-	public SnowMover(Context context, int width, int height, int count,
+	public ChristmasMover(Context context, int width, int height, int count,
 			boolean config) {
 		super(context, width, height, count, config);
 	}
@@ -35,16 +35,16 @@ public class SnowMover extends FallingMover {
 	@Override
 	public Bitmap[] getBitmaps() {
 		Bitmap[] bitmaps = new Bitmap[10];
-		bitmaps[0] = loadBitmap(R.drawable.snow1);
-		bitmaps[1] = loadBitmap(R.drawable.snow2);
-		bitmaps[2] = loadBitmap(R.drawable.snow3);
-		bitmaps[3] = loadBitmap(R.drawable.snow4);
-		bitmaps[4] = loadBitmap(R.drawable.snow5);
-		bitmaps[5] = loadBitmap(R.drawable.snow6);
-		bitmaps[6] = loadBitmap(R.drawable.snow7);
-		bitmaps[7] = loadBitmap(R.drawable.snow8);
-		bitmaps[8] = loadBitmap(R.drawable.snow9);
-		bitmaps[9] = loadBitmap(R.drawable.snow10);
+		bitmaps[0] = loadBitmap(R.drawable.christmas_deer);
+		bitmaps[1] = loadBitmap(R.drawable.christmas_drum);
+		bitmaps[2] = loadBitmap(R.drawable.christmas_father);
+		bitmaps[3] = loadBitmap(R.drawable.christmas_hat);
+		bitmaps[4] = loadBitmap(R.drawable.christmas_light);
+		bitmaps[5] = loadBitmap(R.drawable.christmas_mistletoe);
+		bitmaps[6] = loadBitmap(R.drawable.christmas_present);
+		bitmaps[7] = loadBitmap(R.drawable.christmas_snowman);
+		bitmaps[8] = loadBitmap(R.drawable.christmas_tree);
+		bitmaps[9] = loadBitmap(R.drawable.christmas_father);
 		return bitmaps;
 	}
 

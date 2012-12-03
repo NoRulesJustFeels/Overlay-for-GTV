@@ -19,9 +19,7 @@ package com.entertailion.android.overlay;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.os.SystemClock;
-import android.util.Log;
 
 /**
  * A simple runnable that updates the position of each sprite on the screen
@@ -41,10 +39,11 @@ public class AndroidMover extends Mover {
 	static final long JUMBLE_EVERYTHING_DELAY = 15 * 1000;
 	static final float MAX_VELOCITY = 500.0f;
 
-	public AndroidMover(Context context, int width, int height, int count, boolean config) {
+	public AndroidMover(Context context, int width, int height, int count,
+			boolean config) {
 		super(context, width, height, count, config);
 		// Allocate space for the robot sprites + one background sprite.
-		spriteArray = new CanvasSprite[count];
+		spriteArray = new Renderable[count];
 
 		bitmaps = new Bitmap[3];
 		bitmaps[0] = loadBitmap(R.drawable.skate1);
@@ -55,14 +54,14 @@ public class AndroidMover extends Mover {
 		// spriteArray except for the background.
 		final int robotBucketSize = count / 3;
 		for (int x = 0; x < count; x++) {
-			CanvasSprite robot;
+			Renderable robot = new Renderable();
 			// Our robots come in three flavors. Split them up accordingly.
 			if (x < robotBucketSize) {
-				robot = new CanvasSprite(bitmaps[0]);
+				robot.bitmap = bitmaps[0];
 			} else if (x < robotBucketSize * 2) {
-				robot = new CanvasSprite(bitmaps[1]);
+				robot.bitmap = bitmaps[1];
 			} else {
-				robot = new CanvasSprite(bitmaps[2]);
+				robot.bitmap = bitmaps[2];
 			}
 
 			robot.width = 64;
@@ -94,7 +93,7 @@ public class AndroidMover extends Mover {
 			lastJumbleTime = time;
 			jumbleCount++;
 			// limit the number of jumbles
-			if (jumbleCount==2) {
+			if (jumbleCount == 2) {
 				jumble = false;
 			}
 		}
@@ -134,9 +133,9 @@ public class AndroidMover extends Mover {
 			if ((object.y < 0.0f && object.velocityY < 0.0f)
 					|| (object.y > height - object.height && object.velocityY > 0.0f)) {
 				object.count++;
-				if (object.count>3) {
-					object.alpha = object.alpha-100;
-					if (object.alpha<0) {
+				if (object.count > 3) {
+					object.alpha = object.alpha - 100;
+					if (object.alpha < 0) {
 						object.alpha = 0;
 					}
 				}
@@ -149,7 +148,7 @@ public class AndroidMover extends Mover {
 				}
 			}
 
-			if (object.alpha>0) {
+			if (object.alpha > 0) {
 				visible = true;
 			}
 		}
@@ -157,13 +156,6 @@ public class AndroidMover extends Mover {
 		if (!visible) {
 			throw new RuntimeException();
 		}
-	}
-
-	/**
-	 * @see com.entertailion.android.overlay.Mover#sizeChanged(int, int)
-	 */
-	public void sizeChanged(int width, int height) {
-		// nothing to be done
 	}
 
 }

@@ -15,7 +15,6 @@
 package com.entertailion.android.overlay;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -33,6 +32,7 @@ public class MainActivity extends Activity {
 	private static final String LOG_TAG = "MainActivity";
 	private CanvasSurfaceView canvasSurfaceView;
 	private Mover mover;
+	private boolean finished = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -66,18 +66,13 @@ public class MainActivity extends Activity {
 		if (type.equals(ConfigActivity.PREFERENCE_TYPE_ANDROID)) {
 			mover = new AndroidMover(this, dm.widthPixels, dm.heightPixels,
 					count, false);
-		} else {
+		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_SNOW)) {
 			mover = new SnowMover(this, dm.widthPixels, dm.heightPixels, count,
 					false);
+		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_CHRISTMAS)) {
+			mover = new ChristmasMover(this, dm.widthPixels, dm.heightPixels,
+					count, false);
 		}
-	}
-
-	@Override
-	public void onNewIntent(Intent intent) {
-		init();
-
-		canvasSurfaceView.setRenderer(mover);
-		canvasSurfaceView.setEvent(mover);
 	}
 
 	/** Recycles all of the bitmaps loaded in onCreate(). */
@@ -92,15 +87,20 @@ public class MainActivity extends Activity {
 	/**
 	 * Finish activity when the user interacts
 	 */
-	private void doFinish() {
-		new Thread(new Runnable() {
+	protected void doFinish() {
+		synchronized (this) {
+			if (!finished) {
+				finished = true;
+				new Thread(new Runnable() {
 
-			@Override
-			public void run() {
-				MainActivity.this.finish();
+					@Override
+					public void run() {
+						MainActivity.this.finish();
+					}
+
+				}).start();
 			}
-
-		}).start();
+		}
 	}
 
 	/**

@@ -35,6 +35,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent arg1) {
+		Log.d(LOG_CAT, "onReceive");
 		startMover(context);
 	}
 
@@ -44,7 +45,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @param context
 	 */
 	public static void startMover(Context context) {
-		if (isLiveTv(context)) { // only show this during live TV since the
+		if (isLiveTv(context)) { 
+			// only show this during live TV since the
+			// activity will block user input
 			SharedPreferences preferences = context.getSharedPreferences(
 					ConfigActivity.PREFS_NAME, Activity.MODE_PRIVATE);
 			long lastTimeRun = preferences.getLong(
@@ -52,8 +55,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 			int timing = preferences.getInt(ConfigActivity.PREFERENCE_TIMING,
 					ConfigActivity.PREFERENCE_TIMING_DEFAULT);
 			long currentTime = System.currentTimeMillis();
+			Log.d(LOG_CAT, "startMover: "+(currentTime - lastTimeRun) * 1000 * 60+", "+timing);
 			if ((currentTime - lastTimeRun) * 1000 * 60 >= timing) {
-				// activity will block user input
 				Intent intent = new Intent(context, MainActivity.class);
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				context.startActivity(intent);

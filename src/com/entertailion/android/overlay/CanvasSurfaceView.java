@@ -23,6 +23,7 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -35,7 +36,6 @@ import android.view.View;
  */
 public class CanvasSurfaceView extends SurfaceView implements
 		SurfaceHolder.Callback {
-	private boolean sizeChanged = true;
 	private SurfaceHolder holder;
 	private CanvasThread canvasThread;
 	private Handler handler = new Handler();
@@ -66,12 +66,12 @@ public class CanvasSurfaceView extends SurfaceView implements
 	/** Sets the user's renderer and kicks off the rendering thread. */
 	public void setRenderer(Renderer renderer) {
 		canvasThread = new CanvasThread(holder, renderer);
-
+		canvasThread.setPriority(Thread.MAX_PRIORITY);
 		handler.postDelayed(new Runnable() {
 			public void run() {
 				canvasThread.start();
 			}
-		}, 5000); // let the system settle to make the animation smooth
+		}, 5000); // let the system settle to make the animation smoother
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
@@ -153,13 +153,6 @@ public class CanvasSurfaceView extends SurfaceView implements
 		 */
 		void drawFrame(Canvas canvas);
 
-		/**
-		 * Clear the previous frame.
-		 * 
-		 * @param canvas
-		 *            The target canvas to draw into.
-		 */
-		void clearFrame(Canvas canvas);
 	}
 
 	/**
@@ -172,8 +165,6 @@ public class CanvasSurfaceView extends SurfaceView implements
 		private boolean hasFocus = true;
 		private boolean hasSurface;
 		private boolean contextLost;
-		private int width;
-		private int height;
 		private Renderer renderer;
 		private Runnable event;
 		private SurfaceHolder surfaceHolder;
@@ -181,8 +172,6 @@ public class CanvasSurfaceView extends SurfaceView implements
 		CanvasThread(SurfaceHolder holder, Renderer renderer) {
 			super();
 			done = false;
-			width = 0;
-			height = 0;
 			this.renderer = renderer;
 			surfaceHolder = holder;
 			setName("CanvasThread");
@@ -191,79 +180,60 @@ public class CanvasSurfaceView extends SurfaceView implements
 		@Override
 		public void run() {
 
-			boolean tellRendererSurfaceChanged = true;
-
 			/*
 			 * This is our main activity thread's loop, we go until asked to
 			 * quit.
 			 */
+			final ProfileRecorder profiler = ProfileRecorder.sSingleton;
 			while (!done) {
+				profiler.start(ProfileRecorder.PROFILE_FRAME);
 				/*
 				 * Update the asynchronous state (window size)
 				 */
-				int w;
-				int h;
-				synchronized (this) {
-					// If the user has set a runnable to run in this thread,
-					// execute it
-					if (event != null) {
-						try {
-							event.run();
-						} catch (Exception e) {
-							// mover has ended, so close activity
-							done = true;
-							handler.postDelayed(new Runnable() {
-								public void run() {
-									if (getContext() instanceof Activity) {
-										Activity activity = (Activity) getContext();
-										activity.finish();
-									}
-								}
-							}, 10);
-							break;
-						}
-					}
-					if (needToWait()) {
-						while (needToWait()) {
-							try {
-								wait();
-							} catch (InterruptedException e) {
+				// If the user has set a runnable to run in this thread,
+				// execute it
+				if (event != null) {
+					try {
+						profiler.start(ProfileRecorder.PROFILE_SIM);
+						event.run();
+						profiler.stop(ProfileRecorder.PROFILE_SIM);
+					} catch (Exception e) {
+						profiler.stop(ProfileRecorder.PROFILE_SIM);
 
+						// mover has ended, so close activity
+						done = true;
+						handler.postDelayed(new Runnable() {
+							public void run() {
+								if (getContext() instanceof Activity) {
+									MainActivity activity = (MainActivity) getContext();
+									activity.doFinish();
+								}
 							}
-						}
-					}
-					if (done) {
+						}, 10);
 						break;
 					}
-					tellRendererSurfaceChanged = sizeChanged;
-					w = width;
-					h = height;
-					sizeChanged = false;
+				}
+				if (done) {
+					break;
 				}
 
-				if (tellRendererSurfaceChanged) {
-					renderer.sizeChanged(w, h);
-					tellRendererSurfaceChanged = false;
-				}
+				// Get ready to draw.
+				profiler.start(ProfileRecorder.PROFILE_PAGE_FLIP);
+				Canvas canvas = surfaceHolder.lockCanvas();
+				profiler.start(ProfileRecorder.PROFILE_PAGE_FLIP);
+				if (canvas != null) {
+					// Draw a frame!
+					profiler.start(ProfileRecorder.PROFILE_DRAW);
+					renderer.drawFrame(canvas);
+					profiler.stop(ProfileRecorder.PROFILE_DRAW);
 
-				if ((w > 0) && (h > 0)) {
-					// Get ready to draw.
-					Canvas canvas = surfaceHolder.lockCanvas();
-					if (canvas != null) {
-						// Clear previous frame!
-						renderer.clearFrame(canvas);
-						// Draw a frame!
-						renderer.drawFrame(canvas);
-
-						surfaceHolder.unlockCanvasAndPost(canvas);
-					}
+					profiler.start(ProfileRecorder.PROFILE_PAGE_FLIP);
+					surfaceHolder.unlockCanvasAndPost(canvas);
+					profiler.stop(ProfileRecorder.PROFILE_PAGE_FLIP);
 				}
+				profiler.stop(ProfileRecorder.PROFILE_FRAME);
+				profiler.endFrame();
 			}
-		}
-
-		private boolean needToWait() {
-			return (paused || (!hasFocus) || (!hasSurface) || contextLost)
-					&& (!done);
 		}
 
 		public void surfaceCreated() {
@@ -304,14 +274,49 @@ public class CanvasSurfaceView extends SurfaceView implements
 		}
 
 		public void onWindowResize(int w, int h) {
-			synchronized (this) {
-				width = w;
-				height = h;
-				sizeChanged = true;
-			}
 		}
 
 		public void requestExitAndWait() {
+			// log performance data
+			final ProfileRecorder profiler = ProfileRecorder.sSingleton;
+			final long frameTime = profiler
+					.getAverageTime(ProfileRecorder.PROFILE_FRAME);
+			final long frameMin = profiler
+					.getMinTime(ProfileRecorder.PROFILE_FRAME);
+			final long frameMax = profiler
+					.getMaxTime(ProfileRecorder.PROFILE_FRAME);
+
+			final long drawTime = profiler
+					.getAverageTime(ProfileRecorder.PROFILE_DRAW);
+			final long drawMin = profiler
+					.getMinTime(ProfileRecorder.PROFILE_DRAW);
+			final long drawMax = profiler
+					.getMaxTime(ProfileRecorder.PROFILE_DRAW);
+
+			final long flipTime = profiler
+					.getAverageTime(ProfileRecorder.PROFILE_PAGE_FLIP);
+			final long flipMin = profiler
+					.getMinTime(ProfileRecorder.PROFILE_PAGE_FLIP);
+			final long flipMax = profiler
+					.getMaxTime(ProfileRecorder.PROFILE_PAGE_FLIP);
+
+			final long simTime = profiler
+					.getAverageTime(ProfileRecorder.PROFILE_SIM);
+			final long simMin = profiler
+					.getMinTime(ProfileRecorder.PROFILE_SIM);
+			final long simMax = profiler
+					.getMaxTime(ProfileRecorder.PROFILE_SIM);
+
+			final float fps = frameTime > 0 ? 1000.0f / frameTime : 0.0f;
+
+			String result = "Frame: " + frameTime + "ms (" + fps + " fps)\n"
+					+ "\t\tMin: " + frameMin + "ms\t\tMax: " + frameMax + "\n"
+					+ "Draw: " + drawTime + "ms\n" + "\t\tMin: " + drawMin
+					+ "ms\t\tMax: " + drawMax + "\n" + "Page Flip: " + flipTime
+					+ "ms\n" + "\t\tMin: " + flipMin + "ms\t\tMax: " + flipMax
+					+ "\n" + "Sim: " + simTime + "ms\n" + "\t\tMin: " + simMin
+					+ "ms\t\tMax: " + simMax + "\n";
+			Log.d(VIEW_LOG_TAG, result);
 			// don't call this from CanvasThread thread or it is a guaranteed
 			// deadlock!
 			synchronized (this) {

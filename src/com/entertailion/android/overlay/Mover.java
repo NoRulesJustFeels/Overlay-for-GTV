@@ -25,6 +25,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 
 import com.entertailion.android.overlay.CanvasSurfaceView.Renderer;
@@ -41,7 +42,8 @@ public abstract class Mover implements Runnable, Renderer {
 	protected boolean config;
 	protected static BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
 	protected Bitmap[] bitmaps;
-	protected CanvasSprite[] spriteArray;
+	protected Renderable[] spriteArray;
+	protected Paint paint = new Paint();
 
 	public Mover(Context context, int width, int height, int count,
 			boolean config) {
@@ -50,24 +52,26 @@ public abstract class Mover implements Runnable, Renderer {
 		this.height = height;
 		this.count = count;
 		this.config = config;
+		//paint.setAntiAlias(true);
 	}
 
 	public void drawFrame(Canvas canvas) {
 		if (spriteArray != null) {
 			canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 			for (int x = 0; x < spriteArray.length; x++) {
-				spriteArray[x].draw(canvas);
+				paint.setAlpha(spriteArray[x].alpha);
+				canvas.drawBitmap(spriteArray[x].bitmap, spriteArray[x].x, spriteArray[x].y, paint);
+//				Matrix matrix = new Matrix();
+//				matrix.setRotate(rotation, bitmap.getWidth()/2, bitmap.getHeight()/2);
+//				matrix.postTranslate(x, y);
+//				canvas.drawBitmap(bitmap, matrix, paint);
 			}
 		}
 	}
 
-	public void clearFrame(Canvas canvas) {
-		if (spriteArray != null) {
-			canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-		}
+	public void sizeChanged(int width, int height) {
+		// nothing to be done
 	}
-
-	public abstract void sizeChanged(int width, int height);
 
 	public abstract void run();
 

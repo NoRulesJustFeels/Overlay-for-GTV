@@ -17,15 +17,20 @@
 
 package com.entertailion.android.overlay;
 
+import android.graphics.Bitmap;
+
 /**
  * Base class defining the core set of information necessary to render (and move
- * an object on the screen. 
+ * an object on the screen.
  */
-public abstract class Renderable {
+public class Renderable {
 	// Position.
 	public float x;
 	public float y;
 	public float z;
+	public float startx;
+    public float starty;
+    public float startz;
 
 	// Velocity.
 	public float velocityX;
@@ -38,7 +43,16 @@ public abstract class Renderable {
 
 	// alpha
 	public int alpha = 255;
-	
+
 	// counter
 	public int count;
+
+	// rotation
+	public float rotation;
+
+	public Bitmap bitmap;
+
+	public Renderable() {
+
+	}
 }

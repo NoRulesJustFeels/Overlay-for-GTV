@@ -4,14 +4,15 @@
 <string name="app_name">Overlay</string>
 <string name="app_name_caps">OVERLAY</string>
 
-<string name="type_select">Type</string>
+<string name="type_select">Effect</string>
 <string name="type_1">Android</string>
 <string name="type_2">Snow</string>
-<string name="timing_select">Timing</string>
-<string name="timing_1">30 mins</string>
-<string name="timing_2">1 hour</string>
-<string name="timing_3">2 hour</string>
-<string name="amount_select">Amount</string>
+<string name="type_3">Christmas</string>
+<string name="timing_select">Schedule</string>
+<string name="timing_1">Every 30 mins of every hour</string>
+<string name="timing_2">At the top of each hour</string>
+<string name="timing_3">At the top of each 2nd hour</string>
+<string name="amount_select">Items</string>
 <string name="amount_1">1</string>
 <string name="amount_2">2</string>
 <string name="amount_3">3</string>
