@@ -72,6 +72,9 @@ public class MainActivity extends Activity {
 		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_CHRISTMAS)) {
 			mover = new ChristmasMover(this, dm.widthPixels, dm.heightPixels,
 					count, false);
+		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_CHRISTMAS_LIGHTS)) {
+			mover = new ChristmasLightsMover(this, dm.widthPixels, dm.heightPixels,
+					count, false);
 		}
 	}
 

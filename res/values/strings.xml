@@ -7,9 +7,10 @@
 <string name="type_select">Effect</string>
 <string name="type_1">Android</string>
 <string name="type_2">Snow</string>
-<string name="type_3">Christmas</string>
+<string name="type_3">Christmas Icons</string>
+<string name="type_4">Christmas Lights</string>
 <string name="timing_select">Schedule</string>
-<string name="timing_1">Every 30 mins of every hour</string>
+<string name="timing_1">At every 30 mins of every hour</string>
 <string name="timing_2">At the top of each hour</string>
 <string name="timing_3">At the top of each 2nd hour</string>
 <string name="amount_select">Items</string>
