@@ -32,6 +32,8 @@ import android.os.SystemClock;
 public class ChristmasLightsMover extends Mover {
 	private static final String LOG_CAT = "ChristmasLightsMover";
 	private long firstTime;
+	private long lastTime;
+	private boolean ending;
 
 	public ChristmasLightsMover(Context context, int width, int height, int count,
 			boolean config) {
@@ -67,19 +69,35 @@ public class ChristmasLightsMover extends Mover {
 			spriteArray[x] = robot;
 		}
 		firstTime = SystemClock.uptimeMillis();
+		lastTime = firstTime;
 	}
 
 	public void run() {
 		// Perform a single simulation step.
 		final long time = SystemClock.uptimeMillis();
 		final long timeDelta = time - firstTime;
+		final long lastTimeDelta = time - lastTime;
 		if (timeDelta>30*1000) {
-			throw new RuntimeException();
+			ending = true;
 		}
 
-		for (int x = 0; x < spriteArray.length; x++) {
-			Renderable object = spriteArray[x];
-			object.alpha = 245 + (int)(Math.random()*10);
+		if (lastTimeDelta>100) {
+			boolean visible = false;
+			for (int x = 0; x < spriteArray.length; x++) {
+				Renderable object = spriteArray[x];
+				if (!ending) {
+					object.alpha = 220 + (int)(Math.random()*35);
+				} else if (object.alpha>0) {
+					object.alpha = object.alpha/2;
+				}
+				if (object.alpha>0) {
+					visible = true;
+				}
+			}
+			if (!visible) {
+				throw new RuntimeException();
+			}
+			lastTime = time;
 		}
 	}
 	
