@@ -47,6 +47,7 @@ public class ConfigActivity extends Activity {
 	public static String PREFERENCE_TYPE_SNOW = "preference.type";
 	public static String PREFERENCE_TYPE_CHRISTMAS = "preference.type.christmas";
 	public static String PREFERENCE_TYPE_CHRISTMAS_LIGHTS = "preference.type.christmaslights";
+	public static String PREFERENCE_TYPE_NEW_YEARS = "preference.type.newyears";
 	public static String PREFERENCE_TYPE_DEFAULT = PREFERENCE_TYPE_ANDROID;
 	public static String PREFERENCE_TIMING = "preference.timing";
 	public static int PREFERENCE_TIMING_DEFAULT = 60;
@@ -83,6 +84,7 @@ public class ConfigActivity extends Activity {
 		typeList.add(getString(R.string.type_2));
 		typeList.add(getString(R.string.type_3));
 		typeList.add(getString(R.string.type_4));
+		typeList.add(getString(R.string.type_5));
 		ArrayAdapter<String> typeDataAdapter = new ArrayAdapter<String>(
 				ConfigActivity.this, android.R.layout.simple_spinner_item,
 				typeList);
@@ -121,6 +123,12 @@ public class ConfigActivity extends Activity {
 							height, CONFIG_COUNT, true);
 					moverView.setMover(christmasLightsMover);
 					break;
+				case 4: // New Years
+					type = PREFERENCE_TYPE_NEW_YEARS;
+					Mover newYearsMover = new NewYearsMover(ConfigActivity.this, width,
+							height, CONFIG_COUNT, true);
+					moverView.setMover(newYearsMover);
+					break;
 				default:
 					break;
 				}
@@ -151,6 +159,8 @@ public class ConfigActivity extends Activity {
 			typeSpinner.setSelection(2); // christmas
 		} else if (type.equals(PREFERENCE_TYPE_CHRISTMAS_LIGHTS)) {
 			typeSpinner.setSelection(3); // christmas lights
+		} else if (type.equals(PREFERENCE_TYPE_NEW_YEARS)) {
+			typeSpinner.setSelection(4); // new years
 		}
 
 		timingSpinner = (Spinner) findViewById(R.id.spinnerTiming);

@@ -28,6 +28,7 @@ import android.view.MotionEvent;
  * 
  * @see https://code.google.com/p/apps-for-android/
  */
+// TODO send broadcast while animation is active
 public class MainActivity extends Activity {
 	private static final String LOG_TAG = "MainActivity";
 	private CanvasSurfaceView canvasSurfaceView;
@@ -74,6 +75,9 @@ public class MainActivity extends Activity {
 					count, false);
 		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_CHRISTMAS_LIGHTS)) {
 			mover = new ChristmasLightsMover(this, dm.widthPixels, dm.heightPixels,
+					count, false);
+		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_NEW_YEARS)) {
+			mover = new NewYearsMover(this, dm.widthPixels, dm.heightPixels,
 					count, false);
 		}
 	}
