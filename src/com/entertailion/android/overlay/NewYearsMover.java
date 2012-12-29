@@ -99,8 +99,12 @@ public class NewYearsMover extends Mover {
 			counter++;
 		}
 
-		if (explosion != null && explosion.isAlive()) {
-			explosion.update();
+		if (explosion != null) { 
+			if (explosion.isAlive()) {
+				explosion.update();
+			} else if (!ending) {
+				explosion = new Explosion(EXPLOSION_SIZE, (int)(Math.random()*width), 100);
+			}
 		}
 	}
 
