@@ -35,8 +35,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.ToggleButton;
 
+import com.entertailion.android.overlay.utils.Analytics;
+import com.entertailion.android.overlay.utils.Utils;
+
 /**
- * Main UI to let the user configure the movers
+ * Main UI to let the user configure the app
  * 
  */
 public class ConfigActivity extends Activity {
@@ -48,18 +51,20 @@ public class ConfigActivity extends Activity {
 	public static String PREFERENCE_TYPE_CHRISTMAS = "preference.type.christmas";
 	public static String PREFERENCE_TYPE_CHRISTMAS_LIGHTS = "preference.type.christmaslights";
 	public static String PREFERENCE_TYPE_NEW_YEARS = "preference.type.newyears";
+	public static String PREFERENCE_TYPE_SMILEYS = "preference.type.smileys";
+	public static String PREFERENCE_TYPE_STARS = "preference.type.stars";
 	public static String PREFERENCE_TYPE_DEFAULT = PREFERENCE_TYPE_ANDROID;
 	public static String PREFERENCE_TIMING = "preference.timing";
 	public static int PREFERENCE_TIMING_DEFAULT = 60;
-	public static String PREFERENCE_AMOUNT = "preference.amount";
-	public static int PREFERENCE_AMOUNT_DEFAULT = 10;
+	public static String PREFERENCE_DURATION = "preference.duration";
+	public static int PREFERENCE_DURATION_DEFAULT = 2;
 	public static String PREFERENCE_ON_OFF = "preference.onoff";
 	public static final int CONFIG_COUNT = 20;
 	public static String LAST_TIME_RUN = "last.time.run";
 	private MoverView moverView;
 	private Spinner typeSpinner;
 	private Spinner timingSpinner;
-	private Spinner amountSpinner;
+	private Spinner durationSpinner;
 	private ToggleButton toggleButton;
 	private int width, height;
 	private Handler handler = new Handler();
@@ -85,56 +90,58 @@ public class ConfigActivity extends Activity {
 		typeList.add(getString(R.string.type_3));
 		typeList.add(getString(R.string.type_4));
 		typeList.add(getString(R.string.type_5));
-		ArrayAdapter<String> typeDataAdapter = new ArrayAdapter<String>(
-				ConfigActivity.this, android.R.layout.simple_spinner_item,
-				typeList);
-		typeDataAdapter
-				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		typeList.add(getString(R.string.type_6));
+		typeList.add(getString(R.string.type_7));
+		ArrayAdapter<String> typeDataAdapter = new ArrayAdapter<String>(ConfigActivity.this, android.R.layout.simple_spinner_item, typeList);
+		typeDataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		typeSpinner.setAdapter(typeDataAdapter);
 		typeSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View view,
-					int pos, long id) {
+			public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 				changed = true;
 				String type = PREFERENCE_TYPE_ANDROID;
 				switch (pos) {
 				case 0: // Android
 					type = PREFERENCE_TYPE_ANDROID;
-					Mover androidMover = new AndroidMover(ConfigActivity.this,
-							width, height, CONFIG_COUNT, true);
+					Mover androidMover = new AndroidMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
 					moverView.setMover(androidMover);
 					break;
 				case 1: // Snow
 					type = PREFERENCE_TYPE_SNOW;
-					Mover snowMover = new SnowMover(ConfigActivity.this, width,
-							height, CONFIG_COUNT, true);
+					Mover snowMover = new SnowMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
 					moverView.setMover(snowMover);
 					break;
 				case 2: // Christmas
 					type = PREFERENCE_TYPE_CHRISTMAS;
-					Mover christmasMover = new ChristmasMover(ConfigActivity.this, width,
-							height, CONFIG_COUNT, true);
+					Mover christmasMover = new ChristmasMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
 					moverView.setMover(christmasMover);
 					break;
 				case 3: // Christmas lights
 					type = PREFERENCE_TYPE_CHRISTMAS_LIGHTS;
-					Mover christmasLightsMover = new ChristmasLightsMover(ConfigActivity.this, width,
-							height, CONFIG_COUNT, true);
+					Mover christmasLightsMover = new ChristmasLightsMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
 					moverView.setMover(christmasLightsMover);
 					break;
 				case 4: // New Years
 					type = PREFERENCE_TYPE_NEW_YEARS;
-					Mover newYearsMover = new NewYearsMover(ConfigActivity.this, width,
-							height, CONFIG_COUNT, true);
+					Mover newYearsMover = new NewYearsMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
 					moverView.setMover(newYearsMover);
+					break;
+				case 5: // Smileys
+					type = PREFERENCE_TYPE_SMILEYS;
+					Mover smileysMover = new SmileyMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
+					moverView.setMover(smileysMover);
+					break;
+				case 6: // Stars
+					type = PREFERENCE_TYPE_STARS;
+					Mover starsMover = new StarsMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
+					moverView.setMover(starsMover);
 					break;
 				default:
 					break;
 				}
 
-				SharedPreferences prefs = getSharedPreferences(PREFS_NAME,
-						Context.MODE_PRIVATE);
+				SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 				SharedPreferences.Editor edit = prefs.edit();
 				edit.putString(PREFERENCE_TYPE, type);
 				edit.commit();
@@ -147,10 +154,8 @@ public class ConfigActivity extends Activity {
 			}
 
 		});
-		final SharedPreferences preferences = getSharedPreferences(PREFS_NAME,
-				Activity.MODE_PRIVATE);
-		String type = preferences.getString(PREFERENCE_TYPE,
-				PREFERENCE_TYPE_DEFAULT);
+		final SharedPreferences preferences = getSharedPreferences(PREFS_NAME, Activity.MODE_PRIVATE);
+		String type = preferences.getString(PREFERENCE_TYPE, PREFERENCE_TYPE_DEFAULT);
 		if (type.equals(PREFERENCE_TYPE_ANDROID)) {
 			typeSpinner.setSelection(0); // android
 		} else if (type.equals(PREFERENCE_TYPE_SNOW)) {
@@ -161,6 +166,10 @@ public class ConfigActivity extends Activity {
 			typeSpinner.setSelection(3); // christmas lights
 		} else if (type.equals(PREFERENCE_TYPE_NEW_YEARS)) {
 			typeSpinner.setSelection(4); // new years
+		} else if (type.equals(PREFERENCE_TYPE_SMILEYS)) {
+			typeSpinner.setSelection(5); // smileys
+		} else if (type.equals(PREFERENCE_TYPE_STARS)) {
+			typeSpinner.setSelection(6); // stars
 		}
 
 		timingSpinner = (Spinner) findViewById(R.id.spinnerTiming);
@@ -168,17 +177,13 @@ public class ConfigActivity extends Activity {
 		timingList.add(getString(R.string.timing_1));
 		timingList.add(getString(R.string.timing_2));
 		timingList.add(getString(R.string.timing_3));
-		ArrayAdapter<String> timingDataAdapter = new ArrayAdapter<String>(
-				ConfigActivity.this, android.R.layout.simple_spinner_item,
-				timingList);
-		timingDataAdapter
-				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<String> timingDataAdapter = new ArrayAdapter<String>(ConfigActivity.this, android.R.layout.simple_spinner_item, timingList);
+		timingDataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		timingSpinner.setAdapter(timingDataAdapter);
 		timingSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View view,
-					int pos, long id) {
+			public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 				changed = true;
 				int timing = 60;
 				switch (pos) {
@@ -194,8 +199,7 @@ public class ConfigActivity extends Activity {
 				default:
 					break;
 				}
-				SharedPreferences prefs = getSharedPreferences(PREFS_NAME,
-						Context.MODE_PRIVATE);
+				SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 				SharedPreferences.Editor edit = prefs.edit();
 				edit.putInt(PREFERENCE_TIMING, timing);
 				edit.commit();
@@ -208,8 +212,7 @@ public class ConfigActivity extends Activity {
 			}
 
 		});
-		int timing = preferences.getInt(PREFERENCE_TIMING,
-				PREFERENCE_TIMING_DEFAULT);
+		int timing = preferences.getInt(PREFERENCE_TIMING, PREFERENCE_TIMING_DEFAULT);
 		switch (timing) {
 		case 30: // 30 mins
 			timingSpinner.setSelection(0);
@@ -224,47 +227,34 @@ public class ConfigActivity extends Activity {
 			break;
 		}
 
-		amountSpinner = (Spinner) findViewById(R.id.spinnerAmount);
-		List<String> amountList = new ArrayList<String>();
-		amountList.add(getString(R.string.amount_1));
-		amountList.add(getString(R.string.amount_2));
-		amountList.add(getString(R.string.amount_3));
-		amountList.add(getString(R.string.amount_4));
-		amountList.add(getString(R.string.amount_5));
-		amountList.add(getString(R.string.amount_6));
-		amountList.add(getString(R.string.amount_7));
-		amountList.add(getString(R.string.amount_8));
-		amountList.add(getString(R.string.amount_9));
-		amountList.add(getString(R.string.amount_10));
-		ArrayAdapter<String> amountDataAdapter = new ArrayAdapter<String>(
-				ConfigActivity.this, android.R.layout.simple_spinner_item,
-				amountList);
-		amountDataAdapter
-				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		amountSpinner.setAdapter(amountDataAdapter);
-		amountSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+		durationSpinner = (Spinner) findViewById(R.id.spinnerDuration);
+		List<String> durationList = new ArrayList<String>();
+		durationList.add(getString(R.string.duration_1));
+		durationList.add(getString(R.string.duration_2));
+		durationList.add(getString(R.string.duration_3));
+		durationList.add(getString(R.string.duration_4));
+		ArrayAdapter<String> durationDataAdapter = new ArrayAdapter<String>(ConfigActivity.this, android.R.layout.simple_spinner_item, durationList);
+		durationDataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		durationSpinner.setAdapter(durationDataAdapter);
+		durationSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View view,
-					int pos, long id) {
+			public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 				changed = true;
-				SharedPreferences prefs = getSharedPreferences(PREFS_NAME,
-						Context.MODE_PRIVATE);
+				SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 				SharedPreferences.Editor edit = prefs.edit();
-				edit.putInt(PREFERENCE_AMOUNT, pos + 1);
+				edit.putInt(PREFERENCE_DURATION, pos + 1);
 				edit.commit();
 			}
 
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
-				// TODO Auto-generated method stub
 
 			}
 
 		});
-		int amount = preferences.getInt(PREFERENCE_AMOUNT,
-				PREFERENCE_AMOUNT_DEFAULT);
-		amountSpinner.setSelection(amount - 1);
+		int duration = preferences.getInt(PREFERENCE_DURATION, PREFERENCE_DURATION_DEFAULT);
+		durationSpinner.setSelection(duration - 1);
 
 		toggleButton = (ToggleButton) findViewById(R.id.onOffButton);
 		toggleButton.setOnClickListener(new OnClickListener() {
@@ -272,18 +262,15 @@ public class ConfigActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				boolean checked = toggleButton.isChecked();
-				SharedPreferences prefs = getSharedPreferences(PREFS_NAME,
-						Context.MODE_PRIVATE);
+				SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 				SharedPreferences.Editor edit = prefs.edit();
 				edit.putBoolean(PREFERENCE_ON_OFF, checked);
 				edit.commit();
 
 				AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-				Intent alarmIntent = new Intent(ConfigActivity.this,
-						AlarmReceiver.class);
+				Intent alarmIntent = new Intent(ConfigActivity.this, AlarmReceiver.class);
 				alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				PendingIntent pendingIntent = PendingIntent.getBroadcast(
-						ConfigActivity.this, 0, alarmIntent, 0);
+				PendingIntent pendingIntent = PendingIntent.getBroadcast(ConfigActivity.this, 0, alarmIntent, 0);
 				if (checked) { // ON
 					Calendar calendar = Calendar.getInstance();
 					calendar.set(Calendar.SECOND, 0);
@@ -292,21 +279,16 @@ public class ConfigActivity extends Activity {
 						calendar.set(Calendar.MINUTE, 30);
 					} else {
 						calendar.set(Calendar.MINUTE, 0);
-						calendar.set(Calendar.HOUR_OF_DAY,
-								calendar.get(Calendar.HOUR_OF_DAY) + 1);
+						calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY) + 1);
 					}
 
 					// configure the alarm manager to invoke the mover activity
 					// every 30 mins
-					alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-							calendar.getTimeInMillis(), 1000 * 60 * 30,
-							pendingIntent);
+					alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 1000 * 60 * 30, pendingIntent);
 
-					int timing = preferences.getInt(PREFERENCE_TIMING,
-							PREFERENCE_TIMING_DEFAULT);
-					edit.putLong(ConfigActivity.LAST_TIME_RUN,
-							System.currentTimeMillis() - (timing + 1) * 1000
-									* 60); // set the default for first time run
+					int timing = preferences.getInt(PREFERENCE_TIMING, PREFERENCE_TIMING_DEFAULT);
+					// set the default for first time run
+					edit.putLong(ConfigActivity.LAST_TIME_RUN, System.currentTimeMillis() - (timing + 1) * 1000 * 60); 
 					edit.commit();
 				} else {
 					alarmManager.cancel(pendingIntent);
@@ -317,6 +299,24 @@ public class ConfigActivity extends Activity {
 		});
 		boolean onOff = preferences.getBoolean(PREFERENCE_ON_OFF, false);
 		toggleButton.setChecked(onOff);
+
+		// Set the context for Google Analytics
+		Analytics.createAnalytics(this);
+		Utils.logDeviceInfo(this);
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		// Start Google Analytics for this activity
+		Analytics.startAnalytics(this);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		// Stop Google Analytics for this activity
+		Analytics.stopAnalytics(this);
 	}
 
 	/**
@@ -341,5 +341,8 @@ public class ConfigActivity extends Activity {
 	public void onResume() {
 		super.onResume();
 		changed = false;
+
+		Analytics.logEvent(Analytics.OVERLAY_CONFIG);
 	}
+
 }

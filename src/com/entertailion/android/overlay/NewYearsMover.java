@@ -27,15 +27,13 @@ import android.os.SystemClock;
 public class NewYearsMover extends Mover {
 	private static final String LOG_CAT = "NewYearsMover";
 	private static final int EXPLOSION_SIZE = 200;
-	private long firstTime;
 	private long lastTime;
-	private boolean ending;
 	private int counter = 0;
 	private Explosion explosion;
 
-	public NewYearsMover(Context context, int width, int height, int count, boolean config) {
-		super(context, width, height, count, config);
-		count = 1;
+	public NewYearsMover(Context context, int width, int height, int duration, boolean config) {
+		super(context, width, height, duration, config);
+		int count = 1;
 		// Allocate space for the robot sprites
 		spriteArray = new Renderable[count];
 
@@ -62,38 +60,22 @@ public class NewYearsMover extends Mover {
 			// Add this robot to the spriteArray so it gets drawn
 			spriteArray[x] = robot;
 		}
-		firstTime = SystemClock.uptimeMillis();
-		lastTime = firstTime;
+		lastTime = SystemClock.uptimeMillis();
 
 		if (!config) {
 			explosion = new Explosion(EXPLOSION_SIZE, width / 2, 100);
 		}
 	}
 
-	public void run() {
+	public void doRun() {
 		// Perform a single simulation step.
 		final long time = SystemClock.uptimeMillis();
-		final long timeDelta = time - firstTime;
 		final long lastTimeDelta = time - lastTime;
-		if (timeDelta > 30 * 1000) {
-			ending = true;
-		}
 
 		if (lastTimeDelta > 100) {
-			boolean visible = false;
 			for (int x = 0; x < spriteArray.length; x++) {
 				Renderable object = spriteArray[x];
-				if (!ending) {
-					object.alpha = 220 + (int) (Math.random() * 35);
-				} else if (object.alpha > 0) {
-					object.alpha = object.alpha / 2;
-				}
-				if (object.alpha > 0) {
-					visible = true;
-				}
-			}
-			if (!visible) {
-				throw new RuntimeException();
+				object.alpha = 220 + (int) (Math.random() * 35);
 			}
 			lastTime = time;
 			counter++;
@@ -102,7 +84,7 @@ public class NewYearsMover extends Mover {
 		if (explosion != null) { 
 			if (explosion.isAlive()) {
 				explosion.update();
-			} else if (!ending) {
+			} else {
 				explosion = new Explosion(EXPLOSION_SIZE, (int)(Math.random()*width), 100);
 			}
 		}
@@ -113,11 +95,11 @@ public class NewYearsMover extends Mover {
 			canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
 			// render explosions
-			if (explosion != null) {
+			if (explosion != null && !finished) {
 				explosion.draw(canvas);
 			}
 
-			if (!ending) {
+			if (!finished) {
 				paint.setAlpha(255);
 			}
 			canvas.drawBitmap(bitmaps[4], 0, height - bitmaps[4].getHeight(), paint); // bottle
@@ -144,7 +126,9 @@ public class NewYearsMover extends Mover {
 			canvas.drawBitmap(bitmaps[3], width / 2 + balloonsWidth * 13 / 2, 0, paint);
 
 			for (int x = 0; x < spriteArray.length; x++) {
-				paint.setAlpha(spriteArray[x].alpha);
+				if (!finished) {
+					paint.setAlpha(spriteArray[x].alpha);
+				}
 				canvas.drawBitmap(bitmaps[counter % 3], width / 2 - bitmaps[counter % 3].getWidth() / 2, height - bitmaps[counter % 3].getHeight(), paint);
 			}
 		}

@@ -27,6 +27,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.util.Log;
 
 import com.entertailion.android.overlay.CanvasSurfaceView.Renderer;
 
@@ -35,31 +36,37 @@ import com.entertailion.android.overlay.CanvasSurfaceView.Renderer;
  * 
  */
 public abstract class Mover implements Runnable, Renderer {
+	private static final String LOG_CAT = "Mover";
 	protected Context context;
 	protected int width;
 	protected int height;
-	protected int count;
+	protected int duration;
 	protected boolean config;
 	protected static BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
 	protected Bitmap[] bitmaps;
 	protected Renderable[] spriteArray;
 	protected Paint paint = new Paint();
+	protected long startTime = -1;
+	protected boolean finished = false;
 
-	public Mover(Context context, int width, int height, int count,
+	public Mover(Context context, int width, int height, int duration,
 			boolean config) {
 		this.context = context;
 		this.width = width;
 		this.height = height;
-		this.count = count;
+		this.duration = duration;
 		this.config = config;
 		//paint.setAntiAlias(true);
+		paint.setAlpha(255);
 	}
 
 	public void drawFrame(Canvas canvas) {
 		if (spriteArray != null) {
 			canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 			for (int x = 0; x < spriteArray.length; x++) {
-				paint.setAlpha(spriteArray[x].alpha);
+				if (!finished) {
+					paint.setAlpha(spriteArray[x].alpha);
+				}
 				canvas.drawBitmap(spriteArray[x].bitmap, spriteArray[x].x, spriteArray[x].y, paint);
 //				Matrix matrix = new Matrix();
 //				matrix.setRotate(rotation, bitmap.getWidth()/2, bitmap.getHeight()/2);
@@ -73,7 +80,28 @@ public abstract class Mover implements Runnable, Renderer {
 		// nothing to be done
 	}
 
-	public abstract void run();
+	public void run() {
+		if (startTime==-1) {
+			startTime = System.currentTimeMillis();
+		} else if (!finished){
+			if ((System.currentTimeMillis()-startTime)/1000.0f>duration) {
+				finished = true;
+				paint.setAlpha(255);
+			}
+		}
+		if (!finished)	{
+			doRun();
+		} else {
+			int alpha = paint.getAlpha();
+			alpha = alpha - 5;
+			if (alpha < 0) {
+				throw new RuntimeException();
+			}
+			paint.setAlpha(alpha);
+		}
+	}
+	
+	public abstract void doRun();
 
 	/** Recycles all of the bitmaps loaded. */
 	protected void onDestroy() {

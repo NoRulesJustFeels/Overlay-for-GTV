@@ -21,6 +21,9 @@ import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import com.entertailion.android.overlay.utils.Analytics;
+import com.entertailion.android.overlay.utils.Utils;
+
 /**
  * This activity sets up sprites and passes them off to a CanvasSurfaceView for
  * rendering and movement. Note that Bitmap objects come out of a pool and must
@@ -45,15 +48,59 @@ public class MainActivity extends Activity {
 		canvasSurfaceView.setRenderer(mover);
 		canvasSurfaceView.setEvent(mover);
 		setContentView(canvasSurfaceView);
+
+		// Set the context for Google Analytics
+		Analytics.createAnalytics(this);
+		Utils.logDeviceInfo(this);
+	}
+
+	/**
+	 * @see android.app.Activity#onResume()
+	 */
+	public void onResume() {
+		super.onResume();
+
+		Analytics.logEvent(Analytics.OVERLAY_MAIN);
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		// Start Google Analytics for this activity
+		Analytics.startAnalytics(this);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		// Stop Google Analytics for this activity
+		Analytics.stopAnalytics(this);
 	}
 
 	private void init() {
-		SharedPreferences preferences = getSharedPreferences(
-				ConfigActivity.PREFS_NAME, Activity.MODE_PRIVATE);
-		String type = preferences.getString(ConfigActivity.PREFERENCE_TYPE,
-				ConfigActivity.PREFERENCE_TYPE_DEFAULT);
-		int count = preferences.getInt(ConfigActivity.PREFERENCE_AMOUNT,
-				ConfigActivity.PREFERENCE_AMOUNT_DEFAULT);
+		SharedPreferences preferences = getSharedPreferences(ConfigActivity.PREFS_NAME, Activity.MODE_PRIVATE);
+		String type = preferences.getString(ConfigActivity.PREFERENCE_TYPE, ConfigActivity.PREFERENCE_TYPE_DEFAULT);
+		int duration = preferences.getInt(ConfigActivity.PREFERENCE_DURATION, ConfigActivity.PREFERENCE_DURATION_DEFAULT);
+		switch (duration) {
+		case 1:
+			duration = 15;
+			break;
+		case 2:
+			duration = 30;
+			break;
+		case 3:
+			duration = 45;
+			break;
+		case 4:
+			duration = 60;
+			break;
+		default:
+			duration = 30;
+		}
+		
+		// Tell other overlay apps
+		((OverlayApplication)getApplicationContext()).setOverlayDuration(duration);
+		((OverlayApplication)getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_STARTED);
 
 		// We need to know the width and height of the display pretty soon,
 		// so grab the information now.
@@ -65,20 +112,19 @@ public class MainActivity extends Activity {
 		r.gc();
 
 		if (type.equals(ConfigActivity.PREFERENCE_TYPE_ANDROID)) {
-			mover = new AndroidMover(this, dm.widthPixels, dm.heightPixels,
-					count, false);
+			mover = new AndroidMover(this, dm.widthPixels, dm.heightPixels, duration, false);
 		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_SNOW)) {
-			mover = new SnowMover(this, dm.widthPixels, dm.heightPixels, count,
-					false);
+			mover = new SnowMover(this, dm.widthPixels, dm.heightPixels, duration, false);
 		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_CHRISTMAS)) {
-			mover = new ChristmasMover(this, dm.widthPixels, dm.heightPixels,
-					count, false);
+			mover = new ChristmasMover(this, dm.widthPixels, dm.heightPixels, duration, false);
 		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_CHRISTMAS_LIGHTS)) {
-			mover = new ChristmasLightsMover(this, dm.widthPixels, dm.heightPixels,
-					count, false);
+			mover = new ChristmasLightsMover(this, dm.widthPixels, dm.heightPixels, duration, false);
 		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_NEW_YEARS)) {
-			mover = new NewYearsMover(this, dm.widthPixels, dm.heightPixels,
-					count, false);
+			mover = new NewYearsMover(this, dm.widthPixels, dm.heightPixels, duration, false);
+		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_SMILEYS)) {
+			mover = new SmileyMover(this, dm.widthPixels, dm.heightPixels, duration, false);
+		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_STARS)) {
+			mover = new StarsMover(this, dm.widthPixels, dm.heightPixels, duration, false);
 		}
 	}
 
@@ -102,6 +148,7 @@ public class MainActivity extends Activity {
 
 					@Override
 					public void run() {
+						((OverlayApplication)getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_STOPPED);
 						MainActivity.this.finish();
 					}
 

@@ -31,25 +31,24 @@ import android.os.SystemClock;
  */
 public class ChristmasLightsMover extends Mover {
 	private static final String LOG_CAT = "ChristmasLightsMover";
-	private long firstTime;
 	private long lastTime;
-	private boolean ending;
+	private static final int COUNT = 10;
 
-	public ChristmasLightsMover(Context context, int width, int height, int count,
-			boolean config) {
-		super(context, width, height, count, config);
+	public ChristmasLightsMover(Context context, int width, int height, int duration, boolean config) {
+		super(context, width, height, duration, config);
+		int count = COUNT;
 		if (!config) {
-			count = count*2;
-			super.count = count;
+			count = count * 2;
+			super.duration = count;
 		}
 		// Allocate space for the robot sprites
 		spriteArray = new Renderable[count];
 
 		bitmaps = getBitmaps();
-		
+
 		// This list of things to move. It points to the same content as
 		// spriteArray except for the background.
-		int step = width/count;
+		int step = width / count;
 		// above
 		for (int x = 0; x < count; x++) {
 			Renderable robot;
@@ -60,7 +59,7 @@ public class ChristmasLightsMover extends Mover {
 			robot.height = 64;
 
 			// Pick a random location for this sprite.
-			robot.x = step*x;
+			robot.x = step * x;
 			robot.y = -10;
 			robot.rotation = (float) (Math.random() * 360);
 			robot.rotation = 180f;
@@ -68,53 +67,39 @@ public class ChristmasLightsMover extends Mover {
 			// Add this robot to the spriteArray so it gets drawn
 			spriteArray[x] = robot;
 		}
-		firstTime = SystemClock.uptimeMillis();
-		lastTime = firstTime;
+		lastTime = SystemClock.uptimeMillis();
 	}
 
-	public void run() {
+	public void doRun() {
 		// Perform a single simulation step.
 		final long time = SystemClock.uptimeMillis();
-		final long timeDelta = time - firstTime;
 		final long lastTimeDelta = time - lastTime;
-		if (timeDelta>30*1000) {
-			ending = true;
-		}
 
-		if (lastTimeDelta>100) {
-			boolean visible = false;
+		if (lastTimeDelta > 100) {
 			for (int x = 0; x < spriteArray.length; x++) {
 				Renderable object = spriteArray[x];
-				if (!ending) {
-					object.alpha = 220 + (int)(Math.random()*35);
-				} else if (object.alpha>0) {
-					object.alpha = object.alpha/2;
-				}
-				if (object.alpha>0) {
-					visible = true;
-				}
-			}
-			if (!visible) {
-				throw new RuntimeException();
+				object.alpha = 220 + (int) (Math.random() * 35);
 			}
 			lastTime = time;
 		}
 	}
-	
+
 	public void drawFrame(Canvas canvas) {
 		if (spriteArray != null) {
 			canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 			for (int x = 0; x < spriteArray.length; x++) {
-				paint.setAlpha(spriteArray[x].alpha);
+				if (!finished) {
+					paint.setAlpha(spriteArray[x].alpha);
+				}
 				canvas.drawBitmap(spriteArray[x].bitmap, spriteArray[x].x, spriteArray[x].y, paint);
 				Matrix matrix = new Matrix();
-				matrix.setRotate(spriteArray[x].rotation, spriteArray[x].bitmap.getWidth()/2, spriteArray[x].bitmap.getHeight()/2);
-				matrix.postTranslate(spriteArray[x].x, spriteArray[x].y+height-spriteArray[x].bitmap.getHeight()+20);
+				matrix.setRotate(spriteArray[x].rotation, spriteArray[x].bitmap.getWidth() / 2, spriteArray[x].bitmap.getHeight() / 2);
+				matrix.postTranslate(spriteArray[x].x, spriteArray[x].y + height - spriteArray[x].bitmap.getHeight() + 20);
 				canvas.drawBitmap(spriteArray[x].bitmap, matrix, paint);
 			}
 		}
 	}
-	
+
 	public Bitmap[] getBitmaps() {
 		Bitmap[] bitmaps = new Bitmap[3];
 		bitmaps[0] = loadBitmap(R.drawable.christmas_light_blue);
