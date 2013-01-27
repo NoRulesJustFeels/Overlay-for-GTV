@@ -16,24 +16,16 @@
 package com.entertailion.android.overlay;
 
 import android.app.Application;
-import android.content.Intent;
 
 public class OverlayApplication extends Application {
-	private int overlayDuration = 0;
 	private String overlayState = OutgoingReceiver.OVERLAY_INTENT_STATE_STOPPED;
 	private boolean otherOverlayAppActive = false;
+	private long overlayTime = 0;
+	private boolean isEarliestOverlay = true;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-	}
-
-	public int getOverlayDuration() {
-		return overlayDuration;
-	}
-
-	public void setOverlayDuration(int duration) {
-		this.overlayDuration = duration;
 	}
 
 	public String getOverlayState() {
@@ -42,17 +34,39 @@ public class OverlayApplication extends Application {
 
 	public void setOverlayState(String state) {
 		this.overlayState = state;
-		
+		isEarliestOverlay = true;
+		otherOverlayAppActive = false;
+
 		// send broadcast to other overlay apps
-		OutgoingReceiver.sendOverlayIntent(this, overlayState, overlayDuration);
+		if (state.equals(OutgoingReceiver.OVERLAY_INTENT_STATE_QUERY)) {
+			OutgoingReceiver.sendOverlayQueryIntent(this);
+		} else {
+			OutgoingReceiver.sendOverlayIntent(this);
+		}
 	}
-	
+
 	public boolean isOtherOverlayAppActive() {
 		return otherOverlayAppActive;
 	}
 
 	public void setOtherOverlayAppActive(boolean otherOverlayAppActive) {
 		this.otherOverlayAppActive = otherOverlayAppActive;
+	}
+
+	public long getOverlayTime() {
+		return overlayTime;
+	}
+
+	public void setOverlayTime(long overlayTime) {
+		this.overlayTime = overlayTime;
+	}
+	
+	public boolean isEarliestOverlay() {
+		return isEarliestOverlay;
+	}
+
+	public void setEarliestOverlay(boolean isEarliestOverlay) {
+		this.isEarliestOverlay = isEarliestOverlay;
 	}
 
 }

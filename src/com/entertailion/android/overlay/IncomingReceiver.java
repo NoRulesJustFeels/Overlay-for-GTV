@@ -24,25 +24,29 @@ import android.util.Log;
  * Receive overlay queries from other apps.
  * 
  * @author leon_nicholls
- *
+ * 
  */
 public class IncomingReceiver extends BroadcastReceiver {
-	private static final String LOG_TAG = "OutgoingReceiver";
+	private static final String LOG_TAG = "IncomingReceiver";
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.d(LOG_TAG, "intent="+intent);
+		Log.d(LOG_TAG, "intent=" + intent);
 		if (intent.getAction().equals(OutgoingReceiver.OVERLAY_QUERY_INTENT)) {
 			if (intent.getExtras() != null
 					&& !intent.getExtras().getString(OutgoingReceiver.OVERLAY_INTENT_PACKAGE_NAME, "").equals(OutgoingReceiver.PACKAGE_NAME)) {
-				if (((OverlayApplication) context.getApplicationContext()).getOverlayState().equals(OutgoingReceiver.OVERLAY_INTENT_STATE_STARTED)) {
-					Intent responseIntent = new Intent();
-					responseIntent.setAction(OutgoingReceiver.OVERLAY_INTENT);
-					responseIntent.putExtra(OutgoingReceiver.OVERLAY_INTENT_PACKAGE_NAME, OutgoingReceiver.PACKAGE_NAME);
-					responseIntent.putExtra(OutgoingReceiver.OVERLAY_INTENT_STATE, OutgoingReceiver.OVERLAY_INTENT_STATE_STARTED);
-					responseIntent.putExtra(OutgoingReceiver.OVERLAY_INTENT_SCREEN_RECTANGLE, "0,0,0,0");  // full screen
-					responseIntent.putExtra(OutgoingReceiver.OVERLAY_INTENT_DURATION, ((OverlayApplication) context.getApplicationContext()).getOverlayDuration());
-					context.sendBroadcast(responseIntent);
+				Log.d(LOG_TAG, "state="+((OverlayApplication) context.getApplicationContext()).getOverlayState());
+				if (((OverlayApplication) context.getApplicationContext()).getOverlayState().equals(OutgoingReceiver.OVERLAY_INTENT_STATE_QUERY)) {
+					long otherTime = intent.getExtras().getLong(OutgoingReceiver.OVERLAY_INTENT_TIME, System.currentTimeMillis());
+					Log.d(LOG_TAG, "time: "+otherTime+" vs "+((OverlayApplication) context.getApplicationContext()).getOverlayTime());
+					if (otherTime > ((OverlayApplication) context.getApplicationContext()).getOverlayTime()) {
+						// our query time is earlier than their query time
+						((OverlayApplication) context.getApplicationContext()).setEarliestOverlay(true);
+					} else {
+						((OverlayApplication) context.getApplicationContext()).setEarliestOverlay(false);
+					}
+				} else {
+					OutgoingReceiver.sendOverlayIntent(context);
 				}
 			}
 		}

@@ -35,6 +35,8 @@ import android.util.Log;
 public class AlarmReceiver extends BroadcastReceiver {
 	private static final String LOG_TAG = "AlarmReceiver";
 	private static final String APP_LIVE_TV = "com.google.tv.player";
+	private static final int MAX_COUNT = 12;
+	private static int counter = 0;
 
 	@Override
 	public void onReceive(Context context, Intent arg1) {
@@ -54,16 +56,26 @@ public class AlarmReceiver extends BroadcastReceiver {
 		final long currentTime = System.currentTimeMillis();
 		Log.d(LOG_TAG, "startMover: " + (currentTime - lastTimeRun) * 1000 * 60 + ", " + timing);
 		if ((currentTime - lastTimeRun) * 1000 * 60 >= timing) {
-			((OverlayApplication) context.getApplicationContext()).setOtherOverlayAppActive(false);
-			OutgoingReceiver.sendOverlayQueryIntent(context);
+			counter = 0;
+			((OverlayApplication) context.getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_QUERY);
 			// wait for 5 seconds to see if any other overlay apps are
 			// running
 			try {
-				Timer timer = new Timer();
+				final Timer timer = new Timer();
 				timer.schedule(new TimerTask() {
 					public void run() {
-						if (!((OverlayApplication) context.getApplicationContext()).isOtherOverlayAppActive()) {
+						if (counter++ > MAX_COUNT) {
+							Log.d(LOG_TAG, "max count reached");
+							((OverlayApplication) context.getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_STOPPED);
+							timer.cancel();
+							return;
+						}
+						Log.d(LOG_TAG, "isOtherOverlayAppActive=" + ((OverlayApplication) context.getApplicationContext()).isOtherOverlayAppActive()
+								+ ", isEarliestOverlay=" + ((OverlayApplication) context.getApplicationContext()).isEarliestOverlay());
+						if (!((OverlayApplication) context.getApplicationContext()).isOtherOverlayAppActive()
+								&& ((OverlayApplication) context.getApplicationContext()).isEarliestOverlay()) {
 							if (isLiveTv(context)) {
+								Log.d(LOG_TAG, "is live tv");
 								// only show this during live TV since the
 								// activity will block user input
 								Intent intent = new Intent(context, MainActivity.class);
@@ -72,13 +84,19 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 								SharedPreferences.Editor edit = preferences.edit();
 								edit.putLong(ConfigActivity.LAST_TIME_RUN, currentTime);
-								edit.commit();
+								timer.cancel();
 							} else {
 								Log.d(LOG_TAG, "not live tv");
+								((OverlayApplication) context.getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_STOPPED);
+								timer.cancel();
 							}
+						} else {
+							Log.d(LOG_TAG, "other overlay app active");
+							// keep trying
+							((OverlayApplication) context.getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_QUERY);
 						}
 					}
-				}, 5 * 1000);
+				}, 5 * 1000, 5 * 1000);
 			} catch (Exception e) {
 				Log.e(LOG_TAG, "AlarmReceiver timer", e);
 			}

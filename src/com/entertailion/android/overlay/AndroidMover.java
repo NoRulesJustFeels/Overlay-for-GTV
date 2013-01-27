@@ -97,7 +97,6 @@ public class AndroidMover extends Mover {
 
 			// Jumble! Apply random velocities.
 			if (jumble) {
-				Log.d(LOG_CAT, "jumble");
 				object.velocityX += (MAX_VELOCITY / 2.0f) - (float) (Math.random() * MAX_VELOCITY);
 				object.velocityY += (MAX_VELOCITY / 2.0f) - (float) (Math.random() * MAX_VELOCITY);
 				// Pick a random location for this sprite.

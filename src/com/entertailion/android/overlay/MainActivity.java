@@ -99,7 +99,6 @@ public class MainActivity extends Activity {
 		}
 		
 		// Tell other overlay apps
-		((OverlayApplication)getApplicationContext()).setOverlayDuration(duration);
 		((OverlayApplication)getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_STARTED);
 
 		// We need to know the width and height of the display pretty soon,
