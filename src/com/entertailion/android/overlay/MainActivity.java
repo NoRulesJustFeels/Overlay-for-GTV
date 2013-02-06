@@ -18,6 +18,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -110,6 +111,7 @@ public class MainActivity extends Activity {
 		Runtime r = Runtime.getRuntime();
 		r.gc();
 
+		Log.d(LOG_TAG, "type="+type);
 		if (type.equals(ConfigActivity.PREFERENCE_TYPE_ANDROID)) {
 			mover = new AndroidMover(this, dm.widthPixels, dm.heightPixels, duration, false);
 		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_SNOW)) {
@@ -124,6 +126,8 @@ public class MainActivity extends Activity {
 			mover = new SmileyMover(this, dm.widthPixels, dm.heightPixels, duration, false);
 		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_STARS)) {
 			mover = new StarsMover(this, dm.widthPixels, dm.heightPixels, duration, false);
+		} else if (type.equals(ConfigActivity.PREFERENCE_TYPE_VALENTINES)) {
+			mover = new ValentinesMover(this, dm.widthPixels, dm.heightPixels, duration, false);
 		}
 	}
 

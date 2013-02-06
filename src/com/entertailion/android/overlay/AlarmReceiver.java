@@ -43,7 +43,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Log.d(LOG_TAG, "onReceive");
 		startMover(context);
 	}
-
+	
 	/**
 	 * Start the mover.
 	 * 

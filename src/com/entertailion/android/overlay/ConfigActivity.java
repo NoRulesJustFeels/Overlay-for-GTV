@@ -53,6 +53,7 @@ public class ConfigActivity extends Activity {
 	public static String PREFERENCE_TYPE_NEW_YEARS = "preference.type.newyears";
 	public static String PREFERENCE_TYPE_SMILEYS = "preference.type.smileys";
 	public static String PREFERENCE_TYPE_STARS = "preference.type.stars";
+	public static String PREFERENCE_TYPE_VALENTINES = "preference.type.valentines";
 	public static String PREFERENCE_TYPE_DEFAULT = PREFERENCE_TYPE_ANDROID;
 	public static String PREFERENCE_TIMING = "preference.timing";
 	public static int PREFERENCE_TIMING_DEFAULT = 60;
@@ -92,6 +93,7 @@ public class ConfigActivity extends Activity {
 		typeList.add(getString(R.string.type_5));
 		typeList.add(getString(R.string.type_6));
 		typeList.add(getString(R.string.type_7));
+		typeList.add(getString(R.string.type_8));
 		ArrayAdapter<String> typeDataAdapter = new ArrayAdapter<String>(ConfigActivity.this, android.R.layout.simple_spinner_item, typeList);
 		typeDataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		typeSpinner.setAdapter(typeDataAdapter);
@@ -137,6 +139,11 @@ public class ConfigActivity extends Activity {
 					Mover starsMover = new StarsMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
 					moverView.setMover(starsMover);
 					break;
+				case 7: // Valentines
+					type = PREFERENCE_TYPE_VALENTINES;
+					Mover valentinesMover = new ValentinesMover(ConfigActivity.this, width, height, CONFIG_COUNT, true);
+					moverView.setMover(valentinesMover);
+					break;
 				default:
 					break;
 				}
@@ -170,6 +177,8 @@ public class ConfigActivity extends Activity {
 			typeSpinner.setSelection(5); // smileys
 		} else if (type.equals(PREFERENCE_TYPE_STARS)) {
 			typeSpinner.setSelection(6); // stars
+		} else if (type.equals(PREFERENCE_TYPE_VALENTINES)) {
+			typeSpinner.setSelection(7); // valentines
 		}
 
 		timingSpinner = (Spinner) findViewById(R.id.spinnerTiming);

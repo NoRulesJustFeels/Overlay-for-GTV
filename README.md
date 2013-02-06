@@ -1,5 +1,5 @@
-Overlay-for-GTV
-===============
+Overlay Effects for Google TV
+=============================
 
 <p>Live TV effects for Google TV. Configure various effects to be displayed periodically when watching live TV on your Google TV device. You can choose to see the effects every half hour or at the top of the hour.</p>
 
