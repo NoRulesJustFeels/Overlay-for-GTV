@@ -42,7 +42,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent arg1) {
 		Log.d(LOG_TAG, "onReceive");
-		startMover(context);
+		startMover(context, false);
 	}
 	
 	/**
@@ -50,7 +50,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * 
 	 * @param context
 	 */
-	public static void startMover(final Context context) {
+	public static void startMover(final Context context, boolean force) {
 		final SharedPreferences preferences = context.getSharedPreferences(ConfigActivity.PREFS_NAME, Activity.MODE_PRIVATE);
 		int timing = preferences.getInt(ConfigActivity.PREFERENCE_TIMING, ConfigActivity.PREFERENCE_TIMING_DEFAULT);
 		Calendar calendar = Calendar.getInstance();
@@ -68,7 +68,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		}
 		
 		Log.d(LOG_TAG, "startMainActivity: timing=" + timing+", display="+display);
-		if (display) {
+		if (force || display) {
 			counter = 0;
 			((OverlayApplication) context.getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_QUERY);
 			// wait for 5 seconds to see if any other overlay apps are

@@ -337,7 +337,7 @@ public class ConfigActivity extends Activity {
 			// live TV
 			handler.post(new Runnable() {
 				public void run() {
-					AlarmReceiver.startMover(ConfigActivity.this);
+					AlarmReceiver.startMover(ConfigActivity.this, true);
 				}
 			});
 		}
