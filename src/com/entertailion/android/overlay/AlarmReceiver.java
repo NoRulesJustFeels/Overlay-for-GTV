@@ -13,6 +13,7 @@
  */
 package com.entertailion.android.overlay;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -51,11 +52,23 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 */
 	public static void startMover(final Context context) {
 		final SharedPreferences preferences = context.getSharedPreferences(ConfigActivity.PREFS_NAME, Activity.MODE_PRIVATE);
-		long lastTimeRun = preferences.getLong(ConfigActivity.LAST_TIME_RUN, 0);
 		int timing = preferences.getInt(ConfigActivity.PREFERENCE_TIMING, ConfigActivity.PREFERENCE_TIMING_DEFAULT);
-		final long currentTime = System.currentTimeMillis();
-		Log.d(LOG_TAG, "startMover: " + (currentTime - lastTimeRun) * 1000 * 60 + ", " + timing);
-		if ((currentTime - lastTimeRun) * 1000 * 60 >= timing) {
+		Calendar calendar = Calendar.getInstance();
+		boolean display = false;
+		if (timing==30) {
+			display = true;
+		} else if (timing==60) {
+			if (calendar.get(Calendar.MINUTE)==0) {
+				display = true;
+			}
+		} else if (timing==120) {
+			if (calendar.get(Calendar.MINUTE)==0 && calendar.get(Calendar.HOUR_OF_DAY)%2==0) {
+				display = true;
+			}
+		}
+		
+		Log.d(LOG_TAG, "startMainActivity: timing=" + timing+", display="+display);
+		if (display) {
 			counter = 0;
 			((OverlayApplication) context.getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_QUERY);
 			// wait for 5 seconds to see if any other overlay apps are
@@ -81,10 +94,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 								Intent intent = new Intent(context, MainActivity.class);
 								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 								context.startActivity(intent);
-
-								SharedPreferences.Editor edit = preferences.edit();
-								edit.putLong(ConfigActivity.LAST_TIME_RUN, currentTime);
-								timer.cancel();
 							} else {
 								Log.d(LOG_TAG, "not live tv");
 								((OverlayApplication) context.getApplicationContext()).setOverlayState(OutgoingReceiver.OVERLAY_INTENT_STATE_STOPPED);
